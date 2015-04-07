@@ -1,0 +1,27 @@
+clear,clc;
+addpath('rpca_adm');
+D1 = rgb2gray(imread('data/Blurry2_4_result_whyteMAP.png'));
+D2 = rgb2gray(imread('data/Blurry2_4_final_fergus.png'));
+D3 = rgb2gray(imread('data/Blurry2_4_out.png'));
+D4 = rgb2gray(imread('data/Blurry2_4_out_shan.png'));
+D5 = rgb2gray(imread('data/Deblurred2_4_hirsch.png'));
+D6 = rgb2gray(imread('data/Deblurred_2_4_cho.png'));
+D7 = rgb2gray(imread('data/Deblurred_2_4_krishnan.png'));
+d1 = double(D1(:));
+d2 = double(D2(:));
+d3 = double(D3(:));
+d4 = double(D4(:));
+d5 = double(D5(:));
+d6 = double(D6(:));
+d7 = double(D7(:));
+D = [d1';d2';d3';d4';d5';d6';d7'];
+% D = rand(20,50);
+% [Y,~,~] = impca(D,20);
+[COEFF,SCORE] = pca(D);
+L = reshape(SCORE(1,:)*COEFF(1,:)'+mean(D,1),size(D1));
+subplot(1,2,1),imshow(mat2gray(L));title('PCA');
+subplot(1,2,2),imshow(mat2gray(D3)),title('Best Result');
+% lambda = 0.001;
+% [A_hat,E_hat] = rpca_adm(D,lambda);
+% L = reshape(A_hat(1,:),size(D1));
+

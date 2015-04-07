@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"
+	"http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<!-- Processed by MultiMarkdown -->
+		<meta name="Author" content="Oliver Whyte <oliver.whyte@ens.fr>" />
+		<meta name="Copyright" content="2010, Oliver Whyte" />
+		<meta name="Date" content="September 30, 2010" />
+		<meta name="Format" content="complete" />
+		<title>Matlab code for &#8220;Non-uniform Deblurring for Shaken Images&#8221;</title>
+		<meta name="Version" content="0.2.1" />
+	</head>
+<body>
+
+<h1 id="matlabcodefornon-uniformdeblurringforshakenimages">Matlab code for &#8220;Non-uniform Deblurring for Shaken Images&#8221;</h1>
+
+<p>This package contains code to perform blind deblurring of non-uniform /
+spatially-varying blur caused by camera shake, using the model described in
+<span class="markdowncitation"> (<a href="#Whyte10" title="see citation">1</a>)</span>, applied within the algorithm described in <span class="markdowncitation"> (<a href="#Fergus06" title="see citation">2</a>)</span> and
+<span class="markdowncitation"> (<a href="#Miskin00" title="see citation">3</a>)</span>. Please cite these three papers if using this code in an 
+academic publication.</p>
+
+<p>Please send bug reports to <a href="&#109;&#x61;&#x69;&#108;&#x74;&#x6F;:&#x6F;&#x6C;&#x69;&#x76;&#101;&#114;&#x2E;&#119;&#104;&#121;&#116;&#101;&#64;&#101;&#110;&#115;&#x2E;&#102;&#x72;">&#x6F;&#x6C;&#x69;&#x76;&#101;&#114;&#x2E;&#119;&#104;&#121;&#116;&#101;&#64;&#101;&#110;&#115;&#x2E;&#102;&#x72;</a></p>
+
+<h2 id="installing">1 Installing</h2>
+
+<ul>
+<li>Compile the mex files. In Matlab, <code>cd</code> to the <code>code</code> directory, and run
+<code>mex_all</code></li>
+<li>Add the <code>code</code> directory to your Matlab path</li>
+</ul>
+
+<h3 id="compatibility">1.1 Compatibility</h3>
+
+<ul>
+<li>From version 0.2, the mex files should compile and run on Windows. This has
+not yet been extensively tested however.</li>
+<li>Multi-threaded version requires libpthread to be available (tested on 64-bit
+Linux Ubuntu 9.10 with Matlab R2007b &amp; R2009a, and 32-bit Mac OS X 10.5 with
+Matlab R2006b)
+<ul><li>For Windows, you might try
+<a href="http://sourceware.org/pthreads-win32/">pthreads-win32</a>, although I have
+no experience with this myself. If you have any success with this, 
+please do let me know</li>
+</ul></li>
+</ul>
+
+<h2 id="running">2 Running</h2>
+
+<ul>
+<li>In Matlab, <code>cd</code> to <code>results</code> directory</li>
+<li>Ensure that the <code>code</code> directory is on the Matlab path</li>
+<li>Run one of the scripts called <code>deblur_...</code></li>
+<li>To create scripts for your own images, the existing scripts should provide a
+good start
+<ul><li>A basic <code>deblur_...</code> script has a few components:
+<ol><li>Set <code>CONFIG_FNAME</code> for the name of the directory where the outputs
+will go</li>
+<li>Set <code>NON_UNIFORM = 1 / 0</code> for non-uniform / uniform blur model</li>
+<li>Run an <code>image_settings_...</code> script, which contains per-image
+settings</li>
+<li>Run the <code>default_config</code> script, which sets a lot of parameters to
+their default values</li>
+<li>Run the <code>deblur</code> script, which runs the actual algorithm</li>
+</ol></li></ul></li>
+<li>Note that the algorithm can take a long time to run with the non-uniform
+blur model, e.g. the included <code>pantheon</code> example takes 3 1/2 hours on my 
+workstation, with <code>NUM_THREADS = 4</code> (see below)</li>
+</ul>
+
+<h3 id="differenceswiththecodefromfergusetal.">2.1 Differences with the code from Fergus et al.</h3>
+
+<ul>
+<li>The code is not compatible with the original codes from Miskin &amp; MacKay or
+Fergus et al., as many of the functions have been restructured and take
+different arguments. However, you should get similar, if not identical,
+results to that of Fergus et al., when using the uniform blur model</li>
+</ul>
+
+<h3 id="afewsignificantoptions">2.2 A few significant options</h3>
+
+<p>Please see the original <a href="Fergus_readme.txt">readme from Fergus et al.&#8217;s code</a> 
+for an explanation of more options, and more information on the algorithm in 
+general.</p>
+
+<dl>
+<dt><code>PRESCALE</code></dt>
+<dd>
+<p>Factor to downsample original blurry image.</p>
+</dd>
+
+<dt><code>BLUR_KERNEL_SIZE</code></dt>
+<dd>
+<p>Size of blur in blurry image after downsampling by <code>PRESCALE</code>.</p>
+</dd>
+
+<dt><code>blur_{x,y,z}_lims = [min, max]</code></dt>
+<dd>
+<p>Maximum extent of blur due to contributions of <math xmlns="http://www.w3.org/1998/Math/MathML"><mstyle><msub><mi>&#x03B8;</mi><mi>X</mi></msub></mstyle></math>, <math xmlns="http://www.w3.org/1998/Math/MathML"><mstyle><msub><mi>&#x03B8;</mi><mi>Y</mi></msub></mstyle></math>,
+and <math xmlns="http://www.w3.org/1998/Math/MathML"><mstyle><msub><mi>&#x03B8;</mi><mi>Z</mi></msub></mstyle></math>. Usually derived from <code>BLUR_KERNEL_SIZE</code>.</p>
+</dd>
+
+<dt><code>focal_length_35mm</code></dt>
+<dd>
+<p>Camera&#8217;s focal length in 35mm equivalent. This is sometimes available
+directly in the EXIF tags of an image. If not, the actual focal length
+should be in the EXIF tags. With this, you will need to know the size of
+the camera&#8217;s sensor in mm (you might try looking on
+<a href="http://www.dpreview.com/reviews/specs.asp">http://www.dpreview.com/reviews/specs.asp</a>). Then, <br />
+<code>focal_length_35mm = focal_length / sensor_width_in_mm * 36</code>.</p>
+</dd>
+
+<dt><code>AXIS = [xmin, xmax, ymin, ymax]</code></dt>
+<dd>
+<p>Region of (downsampled) blurry image to use for kernel estimation.</p>
+</dd>
+
+<dt><code>FIRST_INIT_MODE_BLUR = 'xbar' / 'ybar' / 'zbar'</code></dt>
+<dd>
+<p>Initialisation of kernel, depending on approximate shape of blur. One of 3
+axes: <code>xbar</code> for approximately vertical blur, <code>ybar</code> for horizontal, or
+<code>zbar</code> for in-plane rotation.</p>
+</dd>
+
+<dt><code>DISPLAY_EACH_ITERATION = true / false</code></dt>
+<dd>
+<p>After each iteration, show the latent image and kernel, and plot the value
+of the cost function over all iterations.</p>
+</dd>
+
+<dt><code>SAVE_EACH_ITERATION = true / false</code></dt>
+<dd>
+<p>Save images of the latent image and kernel after each iteration. Note that
+this option will cause hundreds of (small) image files to be saved in the
+results directory.</p>
+</dd>
+
+<dt><code>PLOT_LINESEARCH = true / false</code></dt>
+<dd>
+<p>At each iteration, show value of cost function at different points along
+search direction.</p>
+</dd>
+
+<dt><code>NUM_THREADS</code></dt>
+<dd>
+<p>On systems where libpthread is available, the non-uniform blur model can
+be run multi-threaded for speed. On other systems, <code>NUM_THREADS</code> must be
+set to 1.</p>
+</dd>
+
+</dl>
+
+<h2 id="acknowledgements">3 Acknowledgements</h2>
+
+<p>We would like to thank Rob Fergus for making his code available 
+online (<a href="http://cs.nyu.edu/~fergus/research/deblur.html">http://cs.nyu.edu/~fergus/research/deblur.html</a>) and for kindly 
+allowing us to release our modified version of his code, as well as James 
+Miskin and David MacKay for also making their original code available 
+online (<a href="http://www.inference.phy.cam.ac.uk/jwm1003/">http://www.inference.phy.cam.ac.uk/jwm1003/</a>).</p>
+
+<p>Thanks to Xianyong Fang for testing and debugging the mex files on Windows.</p>
+
+<h2 id="license">4 License</h2>
+
+<p>The code in this package is based on the code provided by Fergus et al., and 
+as such several parts are subject to their own license. For functions 
+originally distributed by Fergus et al., please see the original <a href="Fergus_readme.txt">readme from 
+Fergus et al.&#8217;s code</a> for details. These functions are 
+marked with the header:</p>
+
+<pre><code>Author: Rob Fergus (or other)
+Version: 1.0, distribution code.
+Project: Removing Camera Shake from a Single Image, SIGGRAPH 2006 paper
+Copyright 2006, Massachusetts Institute of Technology</code></pre>
+
+<p>For other functions marked with the header:</p>
+
+<pre><code>Author:     Oliver Whyte &lt;oliver.whyte@ens.fr&gt;
+Date:       August 2010
+Copyright:  2010, Oliver Whyte
+Reference:  O. Whyte, J. Sivic, A. Zisserman, and J. Ponce.
+   ``Non-uniform Deblurring for Shaken Images''. In Proc. CVPR, 2010.
+URL:        http://www.di.ens.fr/~whyte/deblurring/</code></pre>
+
+<p>the following license applies:</p>
+
+<hr />
+
+<p>Copyright (c) 2010, Oliver Whyte</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &#8220;Software&#8221;), to 
+deal in the Software without restriction, including without limitation the 
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
+sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED &#8220;AS IS&#8221;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</p>
+
+<hr />
+
+<h2 id="changelog">5 Changelog</h2>
+
+<h3 id="version0.2.130-sep-2010">Version 0.2.1 (30-Sep-2010)</h3>
+
+<ul>
+<li>Modified mex files to allow compilation on Windows</li>
+</ul>
+
+<h3 id="version0.223-sep-2010">Version 0.2 (23-Sep-2010)</h3>
+
+<ul>
+<li>Added Xianyong Fang&#8217;s modifications to mex files for Windows</li>
+<li>Corrected sign of theta in fiddle_lucy3_rot.m</li>
+</ul>
+
+<h3 id="version0.130-aug-2010">Version 0.1 (30-Aug-2010)</h3>
+
+<ul>
+<li>Initial release</li>
+</ul>
+
+<div class="bibliography">
+<hr />
+<p>Bibliography</p>
+
+<div id="Whyte10"><p>[1] <span class="item">O. Whyte, J. Sivic, A. Zisserman, and J. Ponce.
+&#8220;Non-uniform Deblurring for Shaken Images&#8221;. In Proc. CVPR, 2010.</span></p></div>
+
+<div id="Fergus06"><p>[2] <span class="item">R. Fergus, B. Singh, A. Hertzmann, S. T. Roweis, and W.
+T. Freeman. &#8220;Removing camera shake from a single photograph&#8221;. ACM
+Trans. Graphics (Proc. SIGGRAPH 2006), 2006.</span></p></div>
+
+<div id="Miskin00"><p>[3] <span class="item">J. W. Miskin and D. J. C. MacKay. &#8220;Ensemble Learning
+for Blind Image Separation and Deconvolution&#8221;. In Advances in
+Independent Component Analysis, 2000.</span></p></div>
+
+</div>
+</body>
+</html>

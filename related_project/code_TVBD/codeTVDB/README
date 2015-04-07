@@ -1,0 +1,39 @@
+This package contains the implementation of the algorithm presented in the 
+paper D. Perrone and P. Favaro: "Total Variation Blind Deconvolution:
+The Devil is in the Details", IEEE Conference on Computer Vision and
+Pattern Recognition (CVPR), 2014. 
+
+Research use only is allowed provided that the above paper is cited.
+Copyright (C) Daniele Perrone, perrone@iam.unibe.ch  
+	      Paolo Favaro, paolo.favaro@iam.unibe.ch
+	      2014, All rights reserved.
+
+Quick start:
+The scripts main_postcard.m and main_noisy.m run the algorithm on the
+images shown in the paper (saved in the folder data/) and store the
+results in the folder results/.
+
+The script simplified_example.m shows a simplified version of the
+algorithm that does not use the pyramid scheme, closely related to the
+pseudo-code presented in the paper.
+
+The script main_levin.m runs the algorithm on the dataset provided by
+levin in:
+http://www.wisdom.weizmann.ac.il/~levina/papers/LevinEtalCVPR09Data.rar
+Please notice that you need to download the dataset and put the *.mat
+files in the folder data/levin/ in order to run the experiment. Also,
+notice that to reproduce the results shown in the paper it is
+necessary to download the non-blind algorithm from
+http://groups.csail.mit.edu/graphics/CodedAperture/DeconvolutionCode.html
+and uncomment line 54 of the script (fe = deconvSps(blurred,k,0.0068);).
+
+Directories:
+data: input blurry images.
+results: results obtained by running the scripts in the main folder.
+lib: unoptimized algorithm matlab code.
+
+Code Description:
+The main deblurring function si called deblur.m. See the function
+documentation for a detailed description of the input parameters. 
+The function blind.m is the main gradient descent algorithm described in
+the paper (Algorithm 1). 

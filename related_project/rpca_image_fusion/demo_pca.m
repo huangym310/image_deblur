@@ -1,0 +1,17 @@
+clear,clc;
+addpath('rpca_adm');
+D1 = rgb2gray(imread('blurred1_17,6e-3,2e3.png'));
+D2 = rgb2gray(imread('blurred1_deblur.jpg'));
+D3 = imread('blurred1_deblur2.jpg');
+d1 = double(D1(:));
+d2 = double(D2(:));
+d3 = double(D3(:));
+D = [d1';d2'];
+% D = rand(20,50);
+% [Y,~,~] = impca(D,20);
+[COEFF,SCORE] = pca(D);
+L = reshape(SCORE(1,:)*COEFF(1,:)'+mean(D,1),size(D1));
+subplot(1,2,1),imshow(mat2gray(L));title('PCA');
+imwrite(mat2gray(L),'pca.png','png');
+subplot(1,2,2),imshow(mat2gray(D1)),title('JiaJia Ya');
+imwrite(mat2gray(D1),'org.png','png');
